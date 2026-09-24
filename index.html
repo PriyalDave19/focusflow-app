@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FocusFlow - Pomodoro Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: white; }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-slate-800 p-8 rounded-2xl shadow-2xl w-full max-w-md border border-slate-700">
+        <h1 class="text-3xl font-bold text-center mb-6 text-indigo-400">FocusFlow</h1>
+        
+        <!-- Timer Section -->
+        <div class="text-center mb-8">
+            <div id="timer" class="text-7xl font-extrabold mb-4 font-mono">25:00</div>
+            <div class="flex justify-center gap-4">
+                <button id="startBtn" class="bg-indigo-600 hover:bg-indigo-700 px-6 py-2 rounded-lg font-semibold transition">Start</button>
+                <button id="resetBtn" class="bg-slate-600 hover:bg-slate-700 px-6 py-2 rounded-lg font-semibold transition">Reset</button>
+            </div>
+        </div>
+
+        <!-- Task Section -->
+        <div>
+            <h2 class="text-xl font-semibold mb-3">Tasks</h2>
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="taskInput" placeholder="What needs to be done?" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-4 py-2 focus:outline-none focus:border-indigo-500">
+                <button id="addTaskBtn" class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-lg font-bold transition">+</button>
+            </div>
+            <ul id="taskList" class="space-y-2">
+                <!-- Tasks will appear here -->
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Timer Logic
+        let timeLeft = 25 * 60;
+        let timerId = null;
+        const timerDisplay = document.getElementById('timer');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        function updateDisplay() {
+            const minutes = Math.floor(timeLeft / 60);
+            const seconds = timeLeft % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        startBtn.addEventListener('click', () => {
+            if (timerId === null) {
+                timerId = setInterval(() => {
+                    timeLeft--;
+                    updateDisplay();
+                    if (timeLeft === 0) {
+                        clearInterval(timerId);
+                        timerId = null;
+                        alert('Pomodoro completed! Take a break.');
+                        timeLeft = 25 * 60;
+                        updateDisplay();
+                        startBtn.textContent = 'Start';
+                    }
+                }, 1000);
+                startBtn.textContent = 'Pause';
+            } else {
+                clearInterval(timerId);
+                timerId = null;
+                startBtn.textContent = 'Start';
+            }
+        });
+
+        resetBtn.addEventListener('click', () => {
+            clearInterval(timerId);
+            timerId = null;
+            timeLeft = 25 * 60;
+            updateDisplay();
+            startBtn.textContent = 'Start';
+        });
+
+        // Task Logic
+        const taskInput = document.getElementById('taskInput');
+        const addTaskBtn = document.getElementById('addTaskBtn');
+        const taskList = document.getElementById('taskList');
+
+        addTaskBtn.addEventListener('click', () => {
+            const text = taskInput.value.trim();
+            if (text) {
+                const li = document.createElement('li');
+                li.className = 'flex justify-between items-center bg-slate-700 px-4 py-2 rounded-lg';
+                li.innerHTML = `
+                    <span>${text}</span>
+                    <button class="text-red-400 hover:text-red-300 font-bold delete-btn">✕</button>
+                `;
+                taskList.appendChild(li);
+                taskInput.value = '';
+
+                li.querySelector('.delete-btn').addEventListener('click', () => {
+                    li.remove();
+                });
+            }
+        });
+
+        taskInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addTaskBtn.click();
+        });
+    </script>
+</body>
+</html>
